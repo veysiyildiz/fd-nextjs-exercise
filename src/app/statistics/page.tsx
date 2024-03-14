@@ -1,6 +1,12 @@
+import type { Metadata } from "next";
 import { ErrorMessage } from "@/components/atoms";
 import { Table } from "@/components/organisms";
 import { API_URL } from "@/lib/constants";
+
+export const metadata: Metadata = {
+  title: "Statistics",
+  description: "Statistics about the brands in the fashion collection",
+};
 
 const StatisticsPage: React.FC = async () => {
   let status = "loading";
