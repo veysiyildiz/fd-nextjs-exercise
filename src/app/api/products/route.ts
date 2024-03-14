@@ -131,12 +131,18 @@ export async function GET(request: NextRequest) {
     const end = Number(page) * Number(pageSize);
     const paginatedProducts = products.slice(start, end);
 
-    return NextResponse.json({
+    const nextResponse = NextResponse.json({
       total: products.length,
       products: paginatedProducts,
       sizes: categorizedSizes,
       priceRange,
     });
+
+    nextResponse.headers.set("Access-Control-Allow-Origin", "*");
+    nextResponse.headers.set("Access-Control-Allow-Methods", "GET");
+    nextResponse.headers.set("Access-Control-Allow-Headers", "Content-Type");
+
+    return nextResponse;
   } catch (error) {
     if (error instanceof Error) {
       return new NextResponse(error.message, { status: 500 });

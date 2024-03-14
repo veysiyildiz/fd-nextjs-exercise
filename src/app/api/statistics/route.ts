@@ -91,5 +91,12 @@ export async function GET(request: NextRequest) {
       getBrandWithLowestAveragePriceForSize32(products),
   };
 
-  return NextResponse.json(statistics);
+  const nextResponse = NextResponse.json(statistics);
+
+  // Set CORS headers
+  nextResponse.headers.set("Access-Control-Allow-Origin", "*");
+  nextResponse.headers.set("Access-Control-Allow-Methods", "GET");
+  nextResponse.headers.set("Access-Control-Allow-Headers", "Content-Type");
+
+  return nextResponse;
 }
