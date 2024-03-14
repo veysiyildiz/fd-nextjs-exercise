@@ -1,36 +1,38 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# fd-nextjs-exercise
 
-## Getting Started
+## Project Structure and Design Assumptions
 
-First, run the development server:
+This project is a Next.js application built with TypeScript and styled using Tailwind CSS. It follows a structured approach to component organization, dividing them into atoms, molecules, and organisms, which is a concept from Atomic Design methodology.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+The `src/app` directory contains the main application logic. The `api` subdirectory contains functions for API calls, while the `statistics` and `products` subdirectories contain specific logic related to these domains.
+
+The `src/components` directory is divided into `atoms`, `molecules`, and `organisms`, representing increasing levels of complexity. Atoms are the smallest, simplest components, like buttons or text elements. Molecules are slightly more complex, combining multiple atoms into a single component. Organisms are complex components composed of many atoms and molecules.
+
+The `src/lib` directory contains constants used across the application, while `src/types` contains TypeScript type definitions.
+
+## Running the Application
+
+To run the application, follow these steps:
+
+1. Install dependencies:
+
+```sh
+yarn
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Start the development server:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```sh
+yarn dev
+```
+3.To build the application for production, run:
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+```sh
+yarn build
+```
 
-## Learn More
+4.To start the application in production mode, run:
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+```sh
+yarn start
+```
