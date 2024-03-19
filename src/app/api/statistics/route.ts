@@ -14,7 +14,6 @@ const fetchProducts = async (): Promise<Product[]> => {
 };
 
 export async function GET(request: NextRequest) {
-  await new Promise((resolve) => setTimeout(resolve, 400));
   let products: Product[] = await fetchProducts();
 
   const statistics = getStatistics(products);

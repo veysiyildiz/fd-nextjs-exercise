@@ -40,7 +40,6 @@ export async function GET(request: NextRequest) {
     getSearchParams(request.url);
 
   try {
-    await new Promise((resolve) => setTimeout(resolve, 400));
     let products: Product[] = await fetchProducts();
 
     const priceRange = getPriceRange(products);
