@@ -6,130 +6,48 @@ import {
   DEFAULT_PAGE_SIZE,
   DEFAULT_SORT_ORDER,
 } from "@/lib/constants";
+import {
+  categorizeSizes,
+  processProducts,
+  paginateProducts,
+  getPriceRange,
+} from "@/lib/utils";
 
-function filterBySize(products: Product[], size: string): Product[] {
-  const filteredProducts = products.filter((product) =>
-    product.sizes.includes(size)
-  );
+const fetchProducts = async (): Promise<Product[]> => {
+  const response = await fetch(JSON_DATA_URL);
 
-  if (filteredProducts.length === 0) {
-    return [];
+  if (!response.ok) {
+    throw new Error("Failed to fetch products");
   }
 
-  return filteredProducts;
-}
+  return response.json() as Promise<Product[]>;
+};
 
-function getPriceRange(products: Product[]): { min: number; max: number } {
-  let min = products[0]?.priceR || products[0]?.priceO || 0;
-  let max = min;
-
-  products.forEach((product) => {
-    const price = product.priceR || product.priceO;
-    if (price < min) min = price;
-    if (price > max) max = price;
-  });
-
-  return { min, max };
-}
-
-function filterByPriceRange(
-  products: Product[],
-  minPrice: number,
-  maxPrice: number,
-  sortOrder: string
-): Product[] {
-  return products
-    .filter((product) => {
-      const price = product.priceR || product.priceO;
-      return price >= minPrice && price <= maxPrice;
-    })
-    .sort((a, b) => {
-      const priceA = a.priceR || a.priceO;
-      const priceB = b.priceR || b.priceO;
-
-      if (sortOrder === "asc") {
-        return priceA - priceB;
-      } else if (sortOrder === "desc") {
-        return priceB - priceA;
-      } else {
-        return 0;
-      }
-    });
-}
-
-function categorizeSizes(products: Product[]): Record<string, string[]> {
-  const sizeCategories: Record<string, string[]> = {
-    Standard: [],
-    Numeric: [],
+const getSearchParams = (url: string) => {
+  const searchParams = new URLSearchParams(new URL(url).search);
+  return {
+    size: searchParams.get("size") || "",
+    sortOrder: searchParams.get("sortOrder") || DEFAULT_SORT_ORDER,
+    page: Number(searchParams.get("page") || DEFAULT_PAGE),
+    minPrice: Number(searchParams.get("minPrice") || 0),
+    maxPrice: Number(searchParams.get("maxPrice") || Infinity),
+    pageSize: DEFAULT_PAGE_SIZE,
   };
-
-  const standardSizes = [
-    "XS",
-    "S",
-    "M",
-    "L",
-    "XL",
-    "XXL",
-    "XXXL",
-    "4XL",
-    "5XL",
-    "00",
-  ];
-
-  products.forEach((product) => {
-    const hasAlphabeticSize = product.sizes.some((size) => isNaN(Number(size)));
-    const category = hasAlphabeticSize ? "Standard" : "Numeric";
-
-    product.sizes.forEach((size) => {
-      if (!sizeCategories[category].includes(size)) {
-        sizeCategories[category].push(size);
-      }
-    });
-  });
-
-  sizeCategories["Standard"].sort(
-    (a, b) => standardSizes.indexOf(a) - standardSizes.indexOf(b)
-  );
-
-  sizeCategories["Numeric"].sort((a, b) => Number(a) - Number(b));
-
-  return sizeCategories;
-}
+};
 
 export async function GET(request: NextRequest) {
-  const url = new URL(request.url);
-  const searchParams = new URLSearchParams(url.search);
-  const size = searchParams.get("size") || "";
-  const sortOrder = searchParams.get("sortOrder") || DEFAULT_SORT_ORDER;
-  const page = Number(searchParams.get("page") || DEFAULT_PAGE);
-  const minPrice = Number(searchParams.get("minPrice") || 0);
-  const maxPrice = Number(searchParams.get("maxPrice") || Infinity);
-  const pageSize = DEFAULT_PAGE_SIZE;
+  const { size, sortOrder, page, minPrice, maxPrice, pageSize } =
+    getSearchParams(request.url);
 
   try {
     await new Promise((resolve) => setTimeout(resolve, 400));
-    const response = await fetch(JSON_DATA_URL);
-
-    if (!response.ok) {
-      throw new Error("Failed to fetch products");
-    }
-
-    let products: Product[] = await response.json();
+    let products: Product[] = await fetchProducts();
 
     const priceRange = getPriceRange(products);
     const categorizedSizes = categorizeSizes(products);
 
-    if (minPrice || maxPrice) {
-      products = filterByPriceRange(products, minPrice, maxPrice, sortOrder);
-    }
-
-    if (size) {
-      products = filterBySize(products, size);
-    }
-
-    const start = 0;
-    const end = Number(page) * Number(pageSize);
-    const paginatedProducts = products.slice(start, end);
+    products = processProducts(products, minPrice, maxPrice, size, sortOrder);
+    const paginatedProducts = paginateProducts(products, page, pageSize);
 
     return NextResponse.json({
       total: products.length,
@@ -138,10 +56,8 @@ export async function GET(request: NextRequest) {
       priceRange,
     });
   } catch (error) {
-    if (error instanceof Error) {
-      return new NextResponse(error.message, { status: 500 });
-    } else {
-      return new NextResponse("An unknown error occurred", { status: 500 });
-    }
+    const errorMessage =
+      error instanceof Error ? error.message : "An unknown error occurred";
+    return new NextResponse(errorMessage, { status: 500 });
   }
 }
