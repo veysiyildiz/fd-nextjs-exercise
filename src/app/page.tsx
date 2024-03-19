@@ -6,13 +6,17 @@ import { Filters } from "@/components/organisms";
 import { Product, SearchParams } from "@/types";
 import { API_URL, DEFAULT_PAGE } from "@/lib/constants";
 import { fetchProducts } from "@/lib/utils";
-import { Product } from "@/types";
 
 type HomePageProps = {
   searchParams: SearchParams;
 };
 
-const ProductList = ({ products, total }) => (
+type ProductListProps = {
+  products: Product[];
+  total: number;
+};
+
+const ProductList: React.FC<ProductListProps> = ({ products, total }) => (
   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
     {products.length === 0 ? (
       <ErrorMessage message="No products found" className="text-xl" />
@@ -31,7 +35,13 @@ const HomePage: React.FC<HomePageProps> = async ({ searchParams }) => {
   const minPrice = searchParams.minPrice || "";
   const maxPrice = searchParams.maxPrice || "";
 
-  const createURLParams = (page, size, sortOrder, minPrice, maxPrice) => {
+  const createURLParams = (
+    page: number,
+    size: string,
+    sortOrder: string,
+    minPrice: string,
+    maxPrice: string
+  ) => {
     return new URLSearchParams({
       page: (page + 1).toString(),
       size,
@@ -49,7 +59,7 @@ const HomePage: React.FC<HomePageProps> = async ({ searchParams }) => {
     ...(maxPrice && { maxPrice }),
   });
 
-  const response = await fetchProducts(params);
+  const response = await fetchProducts(params.toString());
 
   if (response.status !== "success") {
     return (
@@ -60,7 +70,7 @@ const HomePage: React.FC<HomePageProps> = async ({ searchParams }) => {
     );
   } else {
     try {
-      const data = await response.json();
+      const data = response.data;
     } catch (error) {
       console.error("This is not JSON:", error);
     }
@@ -68,15 +78,6 @@ const HomePage: React.FC<HomePageProps> = async ({ searchParams }) => {
 
   const { status, data, error } = response;
   const { products, sizes, priceRange, total } = data;
-
-  if (status === "failed") {
-    return (
-      <ErrorMessage
-        message={error || "An unknown error occurred"}
-        className="text-xl"
-      />
-    );
-  }
 
   return (
     <section>

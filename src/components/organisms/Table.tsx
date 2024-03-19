@@ -3,7 +3,7 @@ type TableProps<T> = {
   columns: {
     key: keyof T;
     header: string;
-    format?: (value: any) => React.ReactNode;
+    format?: (value: unknown) => React.ReactNode;
   }[];
 };
 

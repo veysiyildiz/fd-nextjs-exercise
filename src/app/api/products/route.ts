@@ -46,7 +46,11 @@ export async function GET(request: NextRequest) {
     const categorizedSizes = categorizeSizes(products);
 
     products = processProducts(products, minPrice, maxPrice, size, sortOrder);
-    const paginatedProducts = paginateProducts(products, page, pageSize);
+    const paginatedProducts = paginateProducts(
+      products,
+      page,
+      Number(pageSize)
+    );
 
     return NextResponse.json({
       total: products.length,
